@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flowers — Surprise</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- overlay untuk click-to-start -->
+  <div id="startOverlay" class="overlay">
+    <div class="startBox">
+      <h1>Flowers</h1>
+      <p>✨ Ketuk layar untuk memulai ✨</p>
+      <button id="startBtn">Mulai</button>
+    </div>
+  </div>
+
+  <!-- kontainer visual -->
+  <main id="stage">
+    <div id="scene">
+      <!-- area bunga -->
+      <div id="flowerWrap" aria-hidden="true">
+        <div class="flower">
+          <!-- kelopak (dibangun oleh CSS pseudo-elemen) -->
+          <div class="center"></div>
+        </div>
+      </div>
+      <!-- hearts floating -->
+      <div id="hearts"></div>
+    </div>
+    <!-- popup pesan -->
+    <div id="popup" class="popup hidden">
+      <div class="popup-card">
+        <button id="closePopup" class="close">×</button>
+        <h2>💌 Surprise untuk kamu</h2>
+        <p>Semoga harimu penuh bunga dan senyuman 🌸</p>
+        <button id="again" class="primary">Tampilkan lagi</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- container untuk kelopak jatuh (dibuat lewat JS) -->
+  <div id="petalContainer" aria-hidden="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
