@@ -1,46 +1,46 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Flowers</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flowers — Surprise</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- Overlay Start -->
+  <!-- START OVERLAY -->
   <div id="startOverlay" class="overlay">
     <div class="startBox">
       <h1>Flowers</h1>
-      <p>✨ Ketuk layar untuk memulai ✨</p>
+      <p>✨ Ketuk untuk memulai ✨</p>
       <button id="startBtn">Mulai</button>
     </div>
   </div>
 
-  <!-- Stage -->
+  <!-- MAIN SCENE -->
   <main id="stage">
     <div id="scene">
-
-      <!-- Flower 3D -->
-      <div id="flower">
-        <div class="center"></div>
-      </div>
-
-      <!-- Popup -->
-      <div id="popup" class="hidden">
-        <div class="popup-card">
-          <button id="closePopup" class="close">×</button>
-          <h2>💌 Surprise untuk kamu</h2>
-          <p>Semoga harimu penuh bunga dan senyuman 🌸</p>
-          <button id="again" class="primary">Tampilkan lagi</button>
+      <div id="flowerWrap">
+        <div class="flower">
+          <div class="center"></div>
         </div>
       </div>
+      <div id="hearts"></div>
+    </div>
 
+    <!-- POPUP -->
+    <div id="popup" class="popup hidden">
+      <div class="popup-card">
+        <button id="closePopup" class="close">×</button>
+        <h2>💌 Surprise untuk kamu</h2>
+        <p>Semoga harimu penuh bunga dan senyuman 🌸</p>
+        <button id="again" class="primary">Tampilkan lagi</button>
+      </div>
     </div>
   </main>
 
-  <!-- Falling petals container -->
+  <!-- FALLING PETALS -->
   <div id="petalContainer"></div>
 
   <script src="script.js"></script>
