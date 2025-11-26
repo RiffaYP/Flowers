@@ -128,4 +128,29 @@ scene.addEventListener('mousemove', (e)=>{
   const dy = (e.clientY - cy) / rect.height;
   flowerWrap.style.transform = `rotateY(${dx*8}deg) rotateX(${dy*-6}deg)`;
 });
+
 scene.addEventListener('mouseleave', ()=> flowerWrap.style.transform = '');
+
+function createFlower() {
+    const container = document.getElementById("petalContainer");
+    const totalPetals = 14;
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+
+    container.innerHTML = "";
+
+    for (let i = 0; i < totalPetals; i++) {
+        const petal = document.createElement("div");
+        petal.classList.add("petal");
+
+        const angle = (360 / totalPetals) * i;
+        petal.style.transform = `
+            rotate(${angle}deg) 
+            translateY(-60px)
+            scale(0.2) 
+            rotateX(75deg)
+        `;
+
+        container.appendChild(petal);
+    }
+}
