@@ -1,63 +1,171 @@
-const startBtn = document.getElementById("startBtn");
-const overlay = document.getElementById("startOverlay");
-const flower = document.getElementById("flower");
-const popup = document.getElementById("popup");
-const closePopup = document.getElementById("closePopup");
-const again = document.getElementById("again");
-const petalContainer = document.getElementById("petalContainer");
+:root{
+  --bg:#0f1724;
+  --accent:#ff6b95;
+}
 
-// Generate petals for 3D flower
-function buildFlower(){
-  const total = 12;
-  for(let i=0;i<total;i++){
-    const p = document.createElement("div");
-    p.className="petal";
-    const angle = (360/total)*i;
-    p.style.transform = `translate(-50%,-50%) rotate(${angle}deg)`;
-    flower.appendChild(p);
+*{ box-sizing:border-box }
+body{
+  margin:0;
+  background:#0f1724;
+  font-family:sans-serif;
+  overflow:hidden;
+  color:white;
+}
+
+/* START OVERLAY */
+.overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:rgba(0,0,0,0.6);
+  z-index:20;
+}
+.startBox{
+  background:rgba(255,255,255,0.1);
+  padding:25px;
+  border-radius:14px;
+  text-align:center;
+  backdrop-filter:blur(6px);
+}
+.startBox button{
+  margin-top:10px;
+  padding:10px 20px;
+  border:0;
+  border-radius:10px;
+  background:linear-gradient(90deg, #ff8db7, #ff6b95);
+  color:white;
+  cursor:pointer;
+}
+
+/* 3D SCENE */
+#stage{
+  width:100%;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+#scene{
+  width:90%;
+  height:90%;
+  perspective:900px;
+  position:relative;
+}
+#flowerWrap{
+  width:300px;
+  height:300px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  transform-style:preserve-3d;
+}
+
+/* FLOWER */
+.flower{
+  width:160px;
+  height:160px;
+  position:relative;
+  transform-style:preserve-3d;
+}
+.center{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  background:#ffdf9d;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+}
+
+.flower::before, .flower::after{
+  content:'';
+  position:absolute;
+  width:140px;
+  height:80px;
+  left:50%;
+  top:50%;
+  transform-origin:50% 90%;
+  border-radius:70% 70% 40% 40%;
+  background:linear-gradient(180deg,#ffb7d0,#ff6b95);
+}
+
+.flower::before{
+  transform:translate(-50%,-50%) rotateZ(0deg) translateZ(-20px) rotateX(10deg);
+}
+.flower::after{
+  transform:translate(-50%,-50%) rotateZ(60deg) translateZ(-10px) rotateX(10deg);
+}
+
+/* EXTRA PETALS */
+.petal{
+  position:absolute;
+  width:140px;
+  height:80px;
+  left:50%;
+  top:50%;
+  transform-origin:50% 90%;
+  border-radius:70% 70% 40% 40%;
+  background:linear-gradient(180deg,#ffd0e0,#ff8db7);
+  transform:translate(-50%,-50%) rotateZ(120deg);
+  opacity:0;
+  animation:bloom 1.3s forwards ease-out;
+}
+
+@keyframes bloom{
+  0% { transform:scale(0.2) rotateX(70deg); opacity:0 }
+  80% { opacity:1 }
+  100% { transform:scale(1) rotateX(0deg); opacity:1 }
+}
+
+/* HEARTS FLOAT */
+#hearts{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+/* FALLING PETALS */
+.petal-fall{
+  position:fixed;
+  background:linear-gradient(#ffd6e0,#ff8db7);
+  width:16px;
+  height:26px;
+  border-radius:70% 70% 40% 40%;
+  animation:fall 6s linear forwards;
+}
+
+@keyframes fall{
+  0% { transform:translateY(-10vh); opacity:1 }
+  100% { transform:translateY(100vh); opacity:0 }
+}
+
+/* POPUP */
+.popup{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:30;
+}
+.popup-card{
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:12px;
+  width:90%;
+  max-width:400px;
+  text-align:center;
+}
+.popup.hidden{ display:none }
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  #flowerWrap{
+    width:240px;
+    height:240px;
   }
 }
-
-// Falling petals
-function spawnFallingPetals(num=18){
-  for(let i=0;i<num;i++){
-    const p = document.createElement("div");
-    p.className="fall";
-    p.style.left = Math.random()*100 + "vw";
-    p.style.animationDuration = 4 + Math.random()*4 + "s";
-    petalContainer.appendChild(p);
-    setTimeout(()=>p.remove(),6000);
-  }
-}
-
-function start(){
-  overlay.style.display="none";
-
-  // Animate flower bloom
-  flower.style.opacity="1";
-  flower.style.transform="scale(1) rotateX(0deg)";
-
-  // falling petals loop
-  spawnFallingPetals(20);
-  let fallLoop = setInterval(()=> spawnFallingPetals(10), 2500);
-
-  // popup muncul
-  setTimeout(()=> popup.classList.remove("hidden"), 1800);
-
-  // stop petal loop after 20s
-  setTimeout(()=> clearInterval(fallLoop), 20000);
-}
-
-startBtn.onclick = start;
-
-// Popup buttons
-closePopup.onclick = ()=> popup.classList.add("hidden");
-again.onclick = ()=> {
-  popup.classList.add("hidden");
-  spawnFallingPetals(20);
-  flower.style.transform="scale(1.1)";
-  setTimeout(()=> flower.style.transform="scale(1)", 300);
-};
-
-// build flower on load
-buildFlower();
