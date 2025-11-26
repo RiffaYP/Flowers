@@ -1,208 +1,63 @@
-/* styles.css — responsive + animations */
-:root{
-  --bg:#0f1724;
-  --card:#ffffff;
-  --accent:#ff6b95;
-  --soft:#ffd6e0;
+const startBtn = document.getElementById("startBtn");
+const overlay = document.getElementById("startOverlay");
+const flower = document.getElementById("flower");
+const popup = document.getElementById("popup");
+const closePopup = document.getElementById("closePopup");
+const again = document.getElementById("again");
+const petalContainer = document.getElementById("petalContainer");
+
+// Generate petals for 3D flower
+function buildFlower(){
+  const total = 12;
+  for(let i=0;i<total;i++){
+    const p = document.createElement("div");
+    p.className="petal";
+    const angle = (360/total)*i;
+    p.style.transform = `translate(-50%,-50%) rotate(${angle}deg)`;
+    flower.appendChild(p);
+  }
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: linear-gradient(180deg,#071021 0%, #0f1724 60%);
-  color:var(--card);
-  overflow:hidden;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+// Falling petals
+function spawnFallingPetals(num=18){
+  for(let i=0;i<num;i++){
+    const p = document.createElement("div");
+    p.className="fall";
+    p.style.left = Math.random()*100 + "vw";
+    p.style.animationDuration = 4 + Math.random()*4 + "s";
+    petalContainer.appendChild(p);
+    setTimeout(()=>p.remove(),6000);
+  }
 }
 
-/* overlay start */
-.overlay{
-  position:fixed; inset:0;
-  display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(180deg, rgba(5,10,20,0.85), rgba(5,8,15,0.7));
-  z-index:40;
-}
-.startBox{
-  text-align:center;
-  background: rgba(255,255,255,0.03);
-  padding:28px; border-radius:14px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 8px 30px rgba(2,6,23,0.6);
-  border: 1px solid rgba(255,255,255,0.04);
-}
-.startBox h1{margin:0 0 10px;font-size:28px}
-.startBox p{margin:0 0 18px;opacity:.85}
-.startBox button{
-  padding:10px 18px;border-radius:10px;border:0;
-  background:linear-gradient(90deg,#ff8db7,#ff6b95);
-  color:white;font-weight:600;cursor:pointer;
-  box-shadow:0 6px 18px rgba(255,107,149,0.18);
+function start(){
+  overlay.style.display="none";
+
+  // Animate flower bloom
+  flower.style.opacity="1";
+  flower.style.transform="scale(1) rotateX(0deg)";
+
+  // falling petals loop
+  spawnFallingPetals(20);
+  let fallLoop = setInterval(()=> spawnFallingPetals(10), 2500);
+
+  // popup muncul
+  setTimeout(()=> popup.classList.remove("hidden"), 1800);
+
+  // stop petal loop after 20s
+  setTimeout(()=> clearInterval(fallLoop), 20000);
 }
 
-/* stage layout */
-#stage{
-  position:relative;
-  width:100%; height:100vh;
-  display:flex; align-items:center; justify-content:center;
-  z-index:1;
-  padding:20px;
-}
+startBtn.onclick = start;
 
-/* 3D scene */
-#scene{
-  width:min(900px,95%); height:min(700px,86vh);
-  display:flex; align-items:center; justify-content:center;
-  perspective:900px;
-  position:relative;
-}
+// Popup buttons
+closePopup.onclick = ()=> popup.classList.add("hidden");
+again.onclick = ()=> {
+  popup.classList.add("hidden");
+  spawnFallingPetals(20);
+  flower.style.transform="scale(1.1)";
+  setTimeout(()=> flower.style.transform="scale(1)", 300);
+};
 
-/* flower wrapper */
-#flowerWrap{
-  width:320px; height:320px;
-  transform-style:preserve-3d;
-  display:flex; align-items:center; justify-content:center;
-  transition:transform 1s cubic-bezier(.2,.9,.3,1);
-}
-
-/* flower (center + petals using pseudo elements) */
-.flower{
-  position:relative; width:180px; height:180px;
-  transform-style:preserve-3d;
-  transform-origin:center center;
-  transition: transform 1.2s cubic-bezier(.2,.9,.3,1);
-}
-.flower .center{
-  position:absolute; inset:50% auto auto 50%;
-  transform:translate(-50%,-50%);
-  width:48px; height:48px; border-radius:50%;
-  background: radial-gradient(circle at 35% 30%, #fff3d8, #ffdfa1 40%, #ffb366 100%);
-  box-shadow:0 8px 20px rgba(255,160,120,0.12);
-  z-index:10;
-}
-
-/* petals via pseudo elements to create 6 kelopak layered in 3D */
-.flower::before, .flower::after {
-  content:"";
-  position:absolute;
-  left:50%; top:50%;
-  width:140px; height:80px;
-  transform-origin:50% 90%;
-  border-radius:70% 70% 40% 40% / 60% 60% 40% 40%;
-  background: linear-gradient(180deg,#ffb7d0,#ff6b95);
-  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.18));
-}
-.flower::before { transform: translate(-50%,-50%) rotateZ(0deg) translateZ(-20px) rotateX(15deg); opacity:0.98; }
-.flower::after  { transform: translate(-50%,-50%) rotateZ(60deg) translateZ(-4px) rotateX(10deg); opacity:0.95; }
-
-/* extra petals created as children for nicer 3D stacking */
-.flower .petal {
-  position:absolute; left:50%; top:50%;
-  width:140px; height:80px;
-  transform-origin:50% 90%;
-  border-radius:70% 70% 40% 40% / 60% 60% 40% 40%;
-  background: linear-gradient(180deg,#ffd0e0,#ff8db7);
-  transform: translate(-50%,-50%) rotateZ(120deg) translateZ(10px) rotateX(8deg);
-  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.22));
-}
-
-/* bloom animation (scale + rotate) */
-.bloom {
-  animation: bloomAnim 1.2s cubic-bezier(.2,.9,.3,1) forwards;
-}
-@keyframes bloomAnim{
-  0% { transform: scale(.2) rotateX(70deg) rotateY(-10deg) translateZ(-160px); opacity:0; }
-  60% { transform: scale(1.05) rotateX(20deg) rotateY(0deg) translateZ(0px); opacity:1; }
-  100%{ transform: scale(1) rotateX(0) rotateY(0) translateZ(0); opacity:1; }
-}
-
-/* floating hearts */
-#hearts{ position:absolute; inset:0; pointer-events:none; z-index:15; }
-.heart {
-  position:absolute; width:40px; height:40px;
-  transform:translate(-50%,-50%);
-  opacity:0.95;
-  will-change: transform, opacity;
-  animation: floatUp linear infinite;
-}
-.heart svg{width:100%; height:100%}
-@keyframes floatUp {
-  0% { transform: translateY(20vh) scale(.8) translateX(0); opacity:0 }
-  10% { opacity:1 }
-  70% { opacity:1; transform: translateY(-40vh) scale(1.05) translateX(20px) }
-  100% { transform: translateY(-80vh) scale(.9) translateX(-40px); opacity:0 }
-}
-
-/* falling petals (generated by JS) */
-.petal-fall {
-  position:fixed;
-  width:18px; height:28px;
-  background: linear-gradient(180deg,#ffd6e0,#ff8db7);
-  border-radius: 60% 60% 40% 40% / 50% 50% 40% 40%;
-  opacity:0.95;
-  pointer-events:none;
-  transform-origin:50% 10%;
-  animation: fall linear forwards;
-}
-@keyframes fall {
-  0% { transform: translateY(-10vh) rotate(0deg) translateX(0) ; opacity:1 }
-  100%{ transform: translateY(110vh) rotate(720deg) translateX(80px) ; opacity:0.02 }
-}
-
-/* popup */
-.popup{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:60; }
-.popup-card{
-  width:min(420px,92%); background:linear-gradient(180deg, rgba(255,255,255,0.95), #fff);
-  padding:20px;border-radius:12px;color:#111;box-shadow:0 14px 50px rgba(2,6,23,0.5);
-  text-align:center;
-}
-.popup.hidden{ display:none; }
-.close{
-  position:absolute; right:10px; top:10px; border:0; background:transparent; font-size:22px; cursor:pointer;
-}
-.primary{
-  background:linear-gradient(90deg,#ff8db7,#ff6b95);
-  border:0;padding:10px 16px;border-radius:10px;color:white;font-weight:600;cursor:pointer;margin-top:12px;
-}
-
-/* responsiveness */
-@media (max-width:600px){
-  #flowerWrap{ width:260px;height:260px }
-  .flower{ width:150px; height:150px }
-  .startBox h1{ font-size:22px }
-  .startBox p{ font-size:14px }
-}
-
-/* small UI polish */
-
-#flowerWrap.tilt { transform: rotateY(-6deg) rotateX(6deg) }
-
-.petal {
-    position: absolute;
-    width: 20px;
-    height: 60px;
-    background: radial-gradient(circle at 50% 20%, #ff9aba, #ff4f7a);
-    border-radius: 20px 20px 0 0;
-    transform-origin: bottom center;
-    opacity: 0;
-    transform: scale(0.2) rotateX(75deg);
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-    animation: bloom 2s ease-out forwards;
-}
-
-@keyframes bloom {
-    0% {
-        opacity: 0;
-        transform: scale(0.2) rotateX(75deg);
-    }
-    60% {
-        opacity: 1;
-        transform: scale(1.15) rotateX(20deg);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) rotateX(0deg);
-    }
-}
+// build flower on load
+buildFlower();
