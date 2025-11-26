@@ -176,4 +176,33 @@ body{
 }
 
 /* small UI polish */
+
 #flowerWrap.tilt { transform: rotateY(-6deg) rotateX(6deg) }
+
+.petal {
+    position: absolute;
+    width: 20px;
+    height: 60px;
+    background: radial-gradient(circle at 50% 20%, #ff9aba, #ff4f7a);
+    border-radius: 20px 20px 0 0;
+    transform-origin: bottom center;
+    opacity: 0;
+    transform: scale(0.2) rotateX(75deg);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    animation: bloom 2s ease-out forwards;
+}
+
+@keyframes bloom {
+    0% {
+        opacity: 0;
+        transform: scale(0.2) rotateX(75deg);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.15) rotateX(20deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotateX(0deg);
+    }
+}
