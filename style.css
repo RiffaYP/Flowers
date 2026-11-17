@@ -109,15 +109,15 @@ body{
   transform-origin:50% 90%;
   border-radius:70% 70% 40% 40%;
   background:linear-gradient(180deg,#ffd0e0,#ff8db7);
-  transform:translate(-50%,-50%) rotateZ(120deg);
   opacity:0;
   animation:bloom 1.3s forwards ease-out;
+  animation-delay:calc(var(--angle) / 360deg * 0.4s);
 }
 
 @keyframes bloom{
-  0% { transform:scale(0.2) rotateX(70deg); opacity:0 }
-  80% { opacity:1 }
-  100% { transform:scale(1) rotateX(0deg); opacity:1 }
+  0%   { transform:translate(-50%,-50%) rotateZ(var(--angle)) rotateX(70deg) scale(0.2); opacity:0 }
+  80%  { opacity:1 }
+  100% { transform:translate(-50%,-50%) rotateZ(var(--angle)) rotateX(0deg) scale(1); opacity:1 }
 }
 
 /* HEARTS FLOAT */
@@ -125,6 +125,16 @@ body{
   position:absolute;
   inset:0;
   pointer-events:none;
+}
+.heart{
+  position:absolute;
+  bottom:-10px;
+  animation:floatUp 6s linear forwards;
+}
+
+@keyframes floatUp{
+  0%   { transform:translateY(0);     opacity:1 }
+  100% { transform:translateY(-70vh); opacity:0 }
 }
 
 /* FALLING PETALS */
