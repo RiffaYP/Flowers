@@ -3,11 +3,6 @@
   --bg-2:#1b2540;
   --petal-1:#ffd0e0;
   --petal-2:#ff6b95;
-  --petal-3:#ff8db7;
-  --core-1:#ffe7a8;
-  --core-2:#ffb347;
-  --stem:#2f9e5b;
-  --leaf:#3fbf6f;
 }
 
 *{ box-sizing:border-box }
@@ -71,7 +66,7 @@ body{
   to{ opacity:1; transform:scale(1) translateY(0) }
 }
 
-/* ---------- 3D SCENE ---------- */
+/* ---------- SCENE ---------- */
 #stage{
   width:100%;
   height:100vh;
@@ -83,209 +78,46 @@ body{
 
 #scene{
   position:relative;
-  width:min(90vw, 520px);
-  height:min(90vh, 520px);
-  perspective:1200px;
-  perspective-origin:50% 30%;
+  width:min(88vw, 460px);
+  height:min(88vh, 460px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
-#flowerWrap{
-  position:absolute;
-  left:50%;
-  top:52%;
-  transform:translate(-50%,-50%);
-  transform-style:preserve-3d;
-}
-
-/* ---------- FLOWER ---------- */
 #flower{
-  position:relative;
-  width:0;
-  height:0;
-  transform-style:preserve-3d;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  animation:breathe 7s ease-in-out infinite;
 }
 
-/* petals pivot around the bloom center, which sits at the top of the stem */
-.petals{
-  position:absolute;
-  left:0;
-  top:0;
-  transform-style:preserve-3d;
-  animation:sway 7s ease-in-out infinite;
+@keyframes breathe{
+  0%,100%{ transform:rotate(-1.5deg) }
+  50%    { transform:rotate(1.5deg) }
 }
 
-/* gentle wobble only around Z so the POV never tips toward the viewer */
-@keyframes sway{
-  0%,100%{ transform:rotateZ(-2deg) }
-  50%    { transform:rotateZ(2deg) }
-}
-
+/* ---------- PETALS (SVG) ---------- */
 .petal{
-  --angle:0deg;
-  --delay:0s;
-  position:absolute;
-  left:0;
-  bottom:0;
-  width:92px;
-  height:150px;
-  margin-left:-46px;
-  border-radius:50% 50% 45% 45% / 65% 65% 35% 35%;
-  background:
-    radial-gradient(ellipse at 50% 18%, #fff 0%, var(--petal-1) 28%, var(--petal-3) 62%, var(--petal-2) 100%);
-  box-shadow:inset 0 -14px 26px rgba(198, 45, 88, .35),
-             inset 0 10px 18px rgba(255,255,255,.45);
-  /* pivot at the base of the petal where it joins the flower center */
+  transform-box:fill-box;
   transform-origin:50% 100%;
   opacity:0;
-  transform:
-    rotateZ(var(--angle))
-    rotateX(-82deg)
-    scale(.25);
-  animation:bloom 1.1s cubic-bezier(.22,1,.36,1) forwards;
-  animation-delay:var(--delay);
-  backface-visibility:hidden;
-}
-
-.petal::after{
-  content:"";
-  position:absolute;
-  inset:14% 30% 45% 30%;
-  border-radius:50%;
-  background:linear-gradient(180deg, rgba(255,255,255,.6), transparent 80%);
-  filter:blur(2px);
-}
-
-/* open outward and slightly away from the camera (negative rotateX = tips go back) */
-@keyframes bloom{
-  0%{
-    opacity:0;
-    transform:
-      rotateZ(var(--angle))
-      rotateX(-88deg)
-      scale(.2);
-  }
-  60%{ opacity:1 }
-  100%{
-    opacity:1;
-    transform:
-      rotateZ(var(--angle))
-      rotateX(-34deg)
-      scale(1);
-  }
-}
-
-/* inner ring of petals (second layer, stands more upright) */
-.petal.petal-inner{
-  width:70px;
-  height:118px;
-  margin-left:-35px;
-  background:
-    radial-gradient(ellipse at 50% 18%, #fff 0%, #ffe0ec 24%, var(--petal-1) 60%, var(--petal-3) 100%);
-  animation-name:bloomInner;
-}
-@keyframes bloomInner{
-  0%{
-    opacity:0;
-    transform:
-      rotateZ(var(--angle))
-      rotateX(-70deg)
-      scale(.2);
-  }
-  60%{ opacity:1 }
-  100%{
-    opacity:1;
-    transform:
-      rotateZ(var(--angle))
-      rotateX(-14deg)
-      scale(1);
-  }
-}
-
-/* ---------- CENTER ---------- */
-/* sits just in front of the petal pivot (origin = petals' bottom center) */
-.center{
-  position:absolute;
-  left:50%;
-  bottom:0;
-  width:70px;
-  height:70px;
-  margin-left:-35px;
-  margin-bottom:-35px;
-  border-radius:50%;
-  background:
-    radial-gradient(circle at 40% 35%, var(--core-1), var(--core-2) 70%);
-  box-shadow:
-    inset -6px -8px 14px rgba(160,90,0,.35),
-    inset 6px 8px 12px rgba(255,255,255,.6),
-    0 0 26px rgba(255,190,80,.5);
-  transform:translateZ(18px);
-  opacity:0;
-  animation:puff .8s ease-out .75s forwards;
-  z-index:2;
-}
-.center::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  background-image:
-    radial-gradient(circle, #b9741c 1.6px, transparent 2px),
-    radial-gradient(circle, #b9741c 1.6px, transparent 2px);
-  background-size:12px 12px;
-  background-position:0 0, 6px 6px;
-  opacity:.55;
-}
-
-@keyframes puff{
-  from{ opacity:0; transform:translateZ(18px) scale(.3) }
-  to{ opacity:1; transform:translateZ(18px) scale(1) }
 }
 
 /* ---------- STEM & LEAVES ---------- */
-/* stem grows DOWN from the bloom pivot (bottom center of #flower) */
 .stem{
-  position:absolute;
-  left:50%;
-  bottom:0;
-  width:10px;
-  margin-left:-5px;
-  border-radius:6px;
-  background:linear-gradient(90deg, #1f7d45, var(--stem) 45%, #1f7d45);
-  transform:translateZ(-24px);
-  transform-origin:top center;
-  height:0;
-  animation:growStem 1.2s ease-out .2s forwards;
-  z-index:-1;
+  transform-box:fill-box;
+  transform-origin:50% 0%;
 }
-
-@keyframes growStem{
-  from{ height:0 }
-  to{ height:180px }
-}
-
 .leaf{
-  position:absolute;
-  left:50%;
-  bottom:-70px;
-  width:70px;
-  height:38px;
-  background:radial-gradient(ellipse at 30% 40%, var(--leaf), #1f7d45);
-  border-radius:0 100% 0 100%;
-  transform-origin:0% 50%;
-  transform:translateZ(-24px);
+  transform-box:fill-box;
   opacity:0;
-  animation:leafIn .7s ease-out 1s forwards;
 }
-.leaf-left{
-  transform:translate(-8px,0) translateZ(-22px) rotate(-24deg);
-}
-.leaf-right{
-  border-radius:100% 0 100% 0;
-  transform:translate(-62px,0) translateZ(-22px) rotate(204deg);
-}
-@keyframes leafIn{
-  from{ opacity:0; scale:.4 }
-  to{ opacity:1; scale:1 }
+
+/* ---------- CORE ---------- */
+#coreGroup{
+  transform-box:fill-box;
+  transform-origin:center;
 }
 
 /* ---------- HEARTS ---------- */
@@ -393,20 +225,13 @@ body{
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width:520px){
-  #scene{ width:92vw; height:92vw }
-  .petal{ width:74px; height:120px; margin-left:-37px }
-  .petal.petal-inner{ width:56px; height:94px; margin-left:-28px }
-  .center{ width:56px; height:56px; margin-left:-28px; margin-bottom:-28px }
-  .stem{ width:8px; margin-left:-4px }
+  #scene{ width:94vw; height:94vw }
 }
 
 /* ---------- REDUCED MOTION ---------- */
 @media (prefers-reduced-motion: reduce){
-  .petals{ animation:none }
-  .petal, .petal.petal-inner{ animation-duration:.01s; animation-delay:0s !important }
-  .center{ animation-duration:.01s; animation-delay:.4s }
-  .stem{ animation-duration:.01s }
-  .leaf{ animation-duration:.01s; animation-delay:.4s }
+  #flower{ animation:none }
+  .petal, .leaf, .stem, #coreGroup{ transition:none !important }
   .heart, .petal-fall{ display:none }
   .startBox, .popup-card, .popup{ animation:none }
 }

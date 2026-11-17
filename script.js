@@ -1,38 +1,101 @@
 "use strict";
 
+const NS = "http://www.w3.org/2000/svg";
+
 const startBtn     = document.getElementById("startBtn");
 const overlay      = document.getElementById("startOverlay");
 const popup        = document.getElementById("popup");
 const closePopup   = document.getElementById("closePopup");
 const again        = document.getElementById("again");
-const petalsLayer  = document.querySelector(".petals");
+const svg          = document.getElementById("flower");
+const petalsGroup  = document.getElementById("petals");
+const coreGroup    = document.getElementById("coreGroup");
+const stemEl       = svg.querySelector(".stem");
+const leaves       = svg.querySelectorAll(".leaf");
 const hearts       = document.getElementById("hearts");
 const petalContainer = document.getElementById("petalContainer");
 
-const OUTER_PETALS = 8;
-const INNER_PETALS = 6;
+const CX = 200;
+const CY = 196;
+
+const OUTER = { count: 8, len: 1.0,  open: 62, spread: 0.0,  grad: "url(#petalGrad)" };
+const INNER = { count: 6, len: 0.66, open: 34, spread: 0.5,  grad: "url(#petalGradInner)" };
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* ---------- BUILD FLOWER (once) ---------- */
-function buildFlower(){
-  const outerStep = 360 / OUTER_PETALS;
-  const innerStep = 360 / INNER_PETALS;
+/* ---------- BUILD ---------- */
+function makePetal(cfg, index, delay){
+  const step = 360 / cfg.count;
+  const angle = index * step + cfg.spread * step;
 
-  for(let i = 0; i < OUTER_PETALS; i++){
-    const p = document.createElement("div");
-    p.className = "petal";
-    p.style.setProperty("--angle", (i * outerStep) + "deg");
-    p.style.setProperty("--delay", (0.15 + i * 0.06) + "s");
-    petalsLayer.appendChild(p);
+  const g = document.createElementNS(NS, "g");
+  g.setAttribute("transform", `translate(${CX} ${CY}) rotate(${angle})`);
+  g.style.transformOrigin = "0 0";
+
+  const use = document.createElementNS(NS, "use");
+  use.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#petalShape");
+  use.setAttribute("href", "#petalShape");
+  use.setAttribute("fill", cfg.grad);
+  use.setAttribute("filter", "url(#softShadow)");
+  use.setAttribute("class", "petal");
+  g.appendChild(use);
+  petalsGroup.appendChild(g);
+
+  use.style.opacity = "0";
+  use.style.transform = `scale(${cfg.len * 0.25}) rotateX(0deg)`;
+  return { el: use, cfg, delay };
+}
+
+function buildFlower(){
+  petalsGroup.innerHTML = "";
+  const items = [];
+
+  for(let i = 0; i < OUTER.count; i++){
+    items.push(makePetal(OUTER, i, 0.10 + i * 0.07));
   }
-  for(let i = 0; i < INNER_PETALS; i++){
-    const p = document.createElement("div");
-    p.className = "petal petal-inner";
-    p.style.setProperty("--angle", (i * innerStep + innerStep / 2) + "deg");
-    p.style.setProperty("--delay", (0.5 + i * 0.06) + "s");
-    petalsLayer.appendChild(p);
+  for(let i = 0; i < INNER.count; i++){
+    items.push(makePetal(INNER, i, 0.55 + i * 0.07));
   }
+
+  coreGroup.style.opacity = "0";
+  stemEl.style.height = "0";
+
+  if(reduceMotion){
+    items.forEach(it => {
+      it.el.style.opacity = "1";
+      it.el.style.transform = `scale(${it.cfg.len})`;
+    });
+    coreGroup.style.opacity = "1";
+    stemEl.style.height = "170";
+    return;
+  }
+
+  /* stem grows first */
+  stemEl.style.transition = "height .9s ease-out";
+  requestAnimationFrame(() => {
+    stemEl.style.height = "170";
+    leaves.forEach((lf, i) => {
+      lf.style.transition = "opacity .5s ease-out";
+      lf.style.transitionDelay = (0.6 + i * 0.15) + "s";
+      lf.style.opacity = "1";
+    });
+  });
+
+  /* petals bloom one by one */
+  items.forEach(it => {
+    it.el.style.transition = "opacity .5s ease-out, transform .9s cubic-bezier(.22,1,.36,1)";
+    it.el.style.transitionDelay = it.delay + "s";
+    setTimeout(() => {
+      it.el.style.opacity = "1";
+      it.el.style.transform = `scale(${it.cfg.len})`;
+    }, 50);
+  });
+
+  /* core last */
+  setTimeout(() => {
+    coreGroup.style.transition = "opacity .5s ease-out, transform .5s ease-out";
+    coreGroup.style.opacity = "1";
+  }, (0.85 + INNER.count * 0.07) * 1000);
 }
 
 /* ---------- EFFECTS ---------- */
@@ -78,12 +141,16 @@ function startExperience(){
   setTimeout(() => {
     popup.classList.remove("hidden");
     again.focus();
-  }, 2200);
+  }, 2600);
 }
 
 function replay(){
   popup.classList.add("hidden");
-  petalsLayer.innerHTML = "";
+  petalsGroup.innerHTML = "";
+  leaves.forEach(lf => {
+    lf.style.transition = "none";
+    lf.style.opacity = "0";
+  });
   buildFlower();
   fallingPetals();
   floatingHearts();
@@ -98,7 +165,6 @@ overlay.addEventListener("click", startExperience);
 closePopup.addEventListener("click", () => {
   popup.classList.add("hidden");
 });
-
 again.addEventListener("click", replay);
 
 document.addEventListener("keydown", e => {
