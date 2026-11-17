@@ -199,6 +199,14 @@ body{
 }
 .popup-card h2{ margin:0 0 10px; font-size:1.35rem }
 .popup-card p{ margin:0 0 20px; color:#555 }
+
+.popup-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+}
+.popup-actions button{ flex:1 1 auto; white-space:nowrap }
 .close{
   position:absolute;
   top:10px;
@@ -223,14 +231,65 @@ body{
   transition:transform .15s ease;
 }
 .primary:hover{ transform:translateY(-2px) }
+
+.secondary{
+  padding:12px 22px;
+  border:1px solid rgba(0,0,0,.15);
+  border-radius:999px;
+  background:#f6f6f6;
+  color:#333;
+  font-size:.95rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform .15s ease, background .15s ease;
+}
+.secondary:hover{ transform:translateY(-2px); background:#eee }
+
 .primary:focus-visible,
+.secondary:focus-visible,
 .close:focus-visible{ outline:3px solid var(--petal-2); outline-offset:2px }
 
 .popup.hidden{ display:none }
 
+/* ---------- TOAST ---------- */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:28px;
+  transform:translate(-50%, 20px);
+  background:rgba(20,20,28,.92);
+  color:#fff;
+  padding:12px 20px;
+  border-radius:999px;
+  font-size:.9rem;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+  z-index:60;
+}
+.toast.show{ opacity:1; transform:translate(-50%, 0) }
+
+/* ---------- PAUSED (tab hidden) ---------- */
+.paused #flower,
+.paused .heart,
+.paused .petal-fall{
+  animation-play-state:paused !important;
+}
+
 /* ---------- RESPONSIVE ---------- */
 @media (max-width:520px){
-  #scene{ width:94vw; height:94vw }
+  #scene{ width:96vw; height:96vw }
+  .startBox{ padding:24px 26px; width:86vw; max-width:340px }
+  .startBox h1{ font-size:1.7rem }
+  .popup-card{ padding:24px 20px 20px }
+  .popup-card h2{ font-size:1.2rem }
+  .popup-actions{ gap:8px }
+  .popup-actions button{ flex:1 1 100%; padding:13px 18px }
+  .primary, .secondary{ font-size:.95rem }
+}
+
+@media (max-height:560px){
+  #scene{ width:auto; height:92vh; aspect-ratio:1 }
 }
 
 /* ---------- REDUCED MOTION ---------- */
