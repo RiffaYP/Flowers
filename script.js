@@ -1,29 +1,46 @@
 "use strict";
 
 /* ============================================================
-   Surprise card — flowers by Riffa
-   - personal message via ?to= & ?msg=
-   - random phrases + "Surprise lagi"
+   Flowers — Surprise
+   - SVG flower bloom (procedural petals, stem, leaves, center)
+   - Personalization via ?to= & ?msg=
+   - Random phrases + "Surprise lagi"
    - Web Share API + clipboard fallback
-   - canvas PNG export
-   - pause effects when tab hidden
+   - Canvas PNG card export
+   - Tab visibility pause
    ============================================================ */
 
-const startBtn     = document.getElementById("startBtn");
-const overlay      = document.getElementById("startOverlay");
-const popup        = document.getElementById("popup");
-const closePopup   = document.getElementById("closePopup");
-const again        = document.getElementById("again");
-const shareBtn     = document.getElementById("share");
-const saveImg      = document.getElementById("saveImg");
-const popupMsg     = document.getElementById("popupMsg");
-const popupTitle   = document.getElementById("popupTitle");
-const startGreeting= document.getElementById("startGreeting");
-const hearts       = document.getElementById("hearts");
-const petalContainer = document.getElementById("petalContainer");
-const toastEl      = document.getElementById("toast");
+const NS = "http://www.w3.org/2000/svg";
 
-const reduceMotion = window.Flower.reduceMotion;
+/* DOM elements */
+const startBtn      = document.getElementById("startBtn");
+const overlay       = document.getElementById("startOverlay");
+const popup         = document.getElementById("popup");
+const closePopup    = document.getElementById("closePopup");
+const again         = document.getElementById("again");
+const shareBtn      = document.getElementById("share");
+const saveImg       = document.getElementById("saveImg");
+const popupMsg      = document.getElementById("popupMsg");
+const popupTitle    = document.getElementById("popupTitle");
+const startGreeting = document.getElementById("startGreeting");
+const hearts        = document.getElementById("hearts");
+const petalContainer = document.getElementById("petalContainer");
+const toastEl       = document.getElementById("toast");
+
+/* SVG elements */
+const svg         = document.getElementById("flower");
+const petalsGroup = document.getElementById("petals");
+const coreGroup   = document.getElementById("coreGroup");
+const stemEl      = svg.querySelector(".stem");
+const leaves      = svg.querySelectorAll(".leaf");
+
+const CX = 200;
+const CY = 196;
+
+const OUTER = { count: 8, len: 1.0,  spread: 0.0, grad: "url(#petalGrad)" };
+const INNER = { count: 6, len: 0.66, spread: 0.5, grad: "url(#petalGradInner)" };
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const PHRASES = [
   "Semoga harimu penuh bunga dan senyuman.",
@@ -54,33 +71,106 @@ function applyPersonalization(){
 }
 applyPersonalization();
 
-/* ---------- toast ---------- */
-let toastTimer;
-function toast(text){
-  toastEl.textContent = text;
-  toastEl.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+/* ---------- flower build ---------- */
+function makePetal(cfg, index, delay){
+  const step = 360 / cfg.count;
+  const angle = index * step + cfg.spread * step;
+
+  const g = document.createElementNS(NS, "g");
+  g.setAttribute("transform", `translate(${CX} ${CY}) rotate(${angle})`);
+
+  const scaler = document.createElementNS(NS, "g");
+  scaler.setAttribute("class", "petal");
+
+  const use = document.createElementNS(NS, "use");
+  use.setAttribute("href", "#petalShape");
+  use.setAttribute("fill", cfg.grad);
+  use.setAttribute("filter", "url(#softShadow)");
+
+  scaler.appendChild(use);
+  g.appendChild(scaler);
+  petalsGroup.appendChild(g);
+
+  scaler.style.opacity = "0";
+  scaler.style.transform = `scale(${cfg.len * 0.25})`;
+  return { el: scaler, cfg, delay };
+}
+
+function resetFlower(){
+  petalsGroup.innerHTML = "";
+  coreGroup.style.transition = "none";
+  coreGroup.style.opacity = "0";
+  stemEl.style.transition = "none";
+  stemEl.style.transform = "scaleY(0)";
+  leaves.forEach(lf => {
+    lf.style.transition = "none";
+    lf.style.transitionDelay = "0s";
+    lf.style.opacity = "0";
+  });
+}
+
+function buildFlower(){
+  resetFlower();
+  const items = [];
+
+  for(let i = 0; i < OUTER.count; i++){
+    items.push(makePetal(OUTER, i, 0.10 + i * 0.07));
+  }
+  for(let i = 0; i < INNER.count; i++){
+    items.push(makePetal(INNER, i, 0.55 + i * 0.07));
+  }
+
+  if(reduceMotion){
+    items.forEach(it => {
+      it.el.style.opacity = "1";
+      it.el.style.transform = `scale(${it.cfg.len})`;
+    });
+    stemEl.style.transform = "scaleY(1)";
+    leaves.forEach(lf => lf.style.opacity = "1");
+    coreGroup.style.opacity = "1";
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    stemEl.style.transition = "transform .9s ease-out";
+    stemEl.style.transform = "scaleY(1)";
+    leaves.forEach((lf, i) => {
+      lf.style.transition = "opacity .5s ease-out";
+      lf.style.transitionDelay = (0.6 + i * 0.15) + "s";
+      lf.style.opacity = "1";
+    });
+  });
+
+  requestAnimationFrame(() => {
+    items.forEach(it => {
+      it.el.style.transition = "opacity .5s ease-out, transform .9s cubic-bezier(.22,1,.36,1)";
+      it.el.style.transitionDelay = it.delay + "s";
+      it.el.style.opacity = "1";
+      it.el.style.transform = `scale(${it.cfg.len})`;
+    });
+  });
+
+  setTimeout(() => {
+    coreGroup.style.transition = "opacity .5s ease-out";
+    coreGroup.style.opacity = "1";
+  }, (0.85 + INNER.count * 0.07) * 1000);
 }
 
 /* ---------- effects ---------- */
-function makeFallingPetal(){
-  const el = document.createElement("div");
-  el.className = "petal-fall";
-  el.style.left = (Math.random() * 100) + "vw";
-  const dur = 6 + Math.random() * 5;
-  el.style.animationDuration = dur + "s";
-  el.style.animationDelay = (Math.random() * 2) + "s";
-  el.style.width = (10 + Math.random() * 8) + "px";
-  petalContainer.appendChild(el);
-  setTimeout(() => el.remove(), dur * 1000 + 2500);
-  return el;
-}
-
 function fallingPetals(){
   if(reduceMotion) return;
   const count = window.innerWidth < 600 ? 12 : 22;
-  for(let i = 0; i < count; i++) makeFallingPetal();
+  for(let i = 0; i < count; i++){
+    const el = document.createElement("div");
+    el.className = "petal-fall";
+    el.style.left = (Math.random() * 100) + "vw";
+    const dur = 6 + Math.random() * 5;
+    el.style.animationDuration = dur + "s";
+    el.style.animationDelay = (Math.random() * 2) + "s";
+    el.style.width = (10 + Math.random() * 8) + "px";
+    petalContainer.appendChild(el);
+    setTimeout(() => el.remove(), dur * 1000 + 2500);
+  }
 }
 
 function floatingHearts(){
@@ -97,13 +187,22 @@ function floatingHearts(){
   }
 }
 
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(text){
+  toastEl.textContent = text;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+}
+
 /* ---------- pause when tab hidden ---------- */
 document.addEventListener("visibilitychange", () => {
   document.documentElement.classList.toggle("paused", document.hidden);
 });
 
-/* ---------- PNG card ---------- */
-function drawCard(time){
+/* ---------- PNG card export ---------- */
+function drawCard(msgText){
   const W = 1080, H = 1080;
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
@@ -115,8 +214,7 @@ function drawCard(time){
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  /* draw the live SVG flower onto the canvas */
-  const clone = document.getElementById("flower").cloneNode(true);
+  const clone = svg.cloneNode(true);
   clone.setAttribute("width", W);
   clone.setAttribute("height", W * 460 / 400);
   const svgStr = new XMLSerializer().serializeToString(clone);
@@ -135,11 +233,11 @@ function drawCard(time){
 
     ctx.fillStyle = "#ffd0e0";
     ctx.font = "34px system-ui, sans-serif";
-    wrapText(ctx, time, W / 2, H - 130, W - 160, 44);
+    wrapText(ctx, msgText, W / 2, H - 130, W - 160, 44);
 
     ctx.fillStyle = "rgba(255,255,255,.4)";
     ctx.font = "24px system-ui, sans-serif";
-    ctx.fillText("🌷 Flowers", W / 2, H - 40);
+    ctx.fillText("Flowers", W / 2, H - 40);
 
     c.toBlob(blob => {
       const url = URL.createObjectURL(blob);
@@ -148,7 +246,7 @@ function drawCard(time){
       a.download = "flowers-card.png";
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast("Kartu tersimpan 🎉");
+      toast("Kartu tersimpan");
     }, "image/png");
   };
   img.onerror = () => toast("Gagal membuat gambar");
@@ -212,7 +310,7 @@ function startExperience(){
   if(started) return;
   started = true;
   overlay.remove();
-  window.Flower.buildFlower();
+  buildFlower();
   fallingPetals();
   floatingHearts();
   setTimeout(showPopup, 2600);
@@ -220,7 +318,7 @@ function startExperience(){
 
 function replay(){
   popup.classList.add("hidden");
-  window.Flower.buildFlower();
+  buildFlower();
   fallingPetals();
   floatingHearts();
   setTimeout(showPopup, 2600);
