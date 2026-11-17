@@ -98,19 +98,24 @@ body{
 }
 
 /* ---------- PETALS (SVG) ---------- */
+/* .petal is a <g> whose path is drawn with its base at local (0,0),
+   and its parent <g> translates to the bloom center. So the default
+   SVG transform-origin (0 0 in user space) is exactly the petal base —
+   no transform-box needed. */
 .petal{
-  transform-box:fill-box;
-  transform-origin:50% 100%;
   opacity:0;
 }
 
 /* ---------- STEM & LEAVES ---------- */
+/* stem grows via transform scaleY from its top, not by animating SVG height */
 .stem{
   transform-box:fill-box;
   transform-origin:50% 0%;
+  transform:scaleY(0);
 }
 .leaf{
   transform-box:fill-box;
+  transform-origin:center;
   opacity:0;
 }
 
